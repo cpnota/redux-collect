@@ -10,10 +10,10 @@ const car = (state = initial, action) => {
     case types.SET_PRICE:
       return Object.assign({}, state, { price: action.price })
     case types.REMOVE:
-      // return undefine to remove from the collection
+      // return undefined to remove from the collection
       return undefined
     default:
-      // if we do not update the state, return undefined
+      // if we never actually set the state, return undefined
       // so that the car is not added to the collection
       return state === initial
         ? undefined

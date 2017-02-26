@@ -7,6 +7,7 @@ const mapValues = require('lodash.mapValues')
  * If the provided reducer returns undefined,
  * its key is removed from the collection.
  * Otherwise, its result is added to the collection.
+ * Will look inside actions for the "path" containing the key.
  * @param reducer the reducer to produce a collection for
  * @param path for each action, the path to the key for the collection (see: https://lodash.com/docs/4.17.4#get)
  * @returns A reducer for a collection.
