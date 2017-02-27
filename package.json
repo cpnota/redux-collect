@@ -1,6 +1,6 @@
 {
   "name": "redux-collect",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A utility for converting a redux reducer into a collection.",
   "main": "index.js",
   "scripts": {
