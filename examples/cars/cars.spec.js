@@ -8,7 +8,7 @@ let store
 beforeEach(() => store = createStore(cars))
 
 function hydrateStore(pojo) {
-    store = createStore(cars, pojo)
+  store = createStore(cars, pojo)
 }
 
 const jaguar = {

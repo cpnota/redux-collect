@@ -16,7 +16,7 @@ const collectReducer = (reducer, path) => {
   if (typeof reducer !== 'function') throw new Error('Must provided a valid reducer.')
   if (path === null || path === undefined) throw new Error('Must provided a valid path (see: https://lodash.com/docs/4.17.4#get).')
 
-	return (state, action) => {
+  return (state, action) => {
     const map = Immutable.Map(state) // normalize
     const key = get(action, path) // extract the key from the action
 
@@ -27,7 +27,7 @@ const collectReducer = (reducer, path) => {
     return value === undefined // allow null values in the state
       ? map.delete(key) // remove from the collection if undefined
       : map.set(key, value) // update the state otherwise
-	}
+  }
 }
 
 /**
@@ -42,8 +42,8 @@ const collectReducer = (reducer, path) => {
  */
 const collectSelector = selector => (state, key, ...args) => {
   const map = Immutable.Map(state) // normalize
-	const value = map.get(key)
-	return value && selector(value, ...args)
+  const value = map.get(key)
+  return value && selector(value, ...args)
 }
 
 /**
