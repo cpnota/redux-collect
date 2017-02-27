@@ -7,6 +7,10 @@
     "test": "jest",
     "posttest": "eslint index.js examples/**"
   },
+    "repository": {
+    "type": "git",
+    "url": "https://github.com/cpnota/redux-collect"
+  },
   "keywords": [
     "redux",
     "collection",
