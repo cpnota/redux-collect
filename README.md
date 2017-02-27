@@ -6,12 +6,12 @@ A utility for converting a [redux](http://redux.js.org) reducer into a collectio
 
 ## Usage
 
-Requires es6/babel. You can  using either require syntax or es6 modules:
-
 ```javascript
 // es6 modules
 import { collectReducer, collectSelector, collectSelectors } from 'redux-collect'
+```
 
+```javascript
 // require syntax
 const { collectReducer, collectSelector, collectSelectors } = require('redux-collect')
 ```
