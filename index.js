@@ -54,7 +54,7 @@ const collectSelector = selector => (state, key, ...args) => {
  * @param selectors an object containing selectors
  */
 const collectSelectors = selectors => (
-	mapValues(selectors, collectSelector)
+  mapValues(selectors, collectSelector)
 )
 
 module.exports = {
