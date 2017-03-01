@@ -1,6 +1,6 @@
-const Immutable = require('Immutable')
+const Immutable = require('immutable')
 const get = require('lodash.get')
-const mapValues = require('lodash.mapValues')
+const mapValues = require('lodash.mapvalues')
 
 /**
  * Takes a reducer and returns a reducer for a collection.
