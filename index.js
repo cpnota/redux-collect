@@ -3,8 +3,6 @@ const get = require('lodash.get')
 const set = require('lodash.set')
 const mapValues = require('lodash.mapvalues')
 
-const selectorContext = []
-
 /**
  * Takes a reducer and returns a reducer for a collection.
  * If the provided reducer returns undefined,
@@ -60,31 +58,43 @@ const collectSelectors = selectors => (
   mapValues(selectors, collectSelector)
 )
 
+const bindSelector = (selector, key) => (
+  (state, ...args) => selector(state, key, ...args)
+)
+
+const bindSelectors = (selectors, key) => (
+  mapValues(selectors, selector => bindSelector(selector, key))
+)
+
 /**
  * ACTIONS
  */
-const collectThunk = (thunk, path, key) => {
+const collectThunk = (thunk, path, key, selectors) => {
+  const boundSelectors = bindSelectors(selectors, key)
+
   const decorateDispatch = dispatch => (
    (result, ...args) => dispatch(decorate(result, path, key), ...args)
   )
 
-  return (dispatch, ...args) => {
-    thunk(decorateDispatch(dispatch), ...args)
-  }
+  return (dispatch, getState, ...args) => (
+    selectors
+      ? thunk(decorateDispatch(dispatch), getState, boundSelectors, ...args)
+      : thunk(decorateDispatch(dispatch), getState, ...args)
+  )
 }
 
-const decorate = (result, path, key) => (
+const decorate = (result, path, key, selectors) => (
   typeof result === 'function'
-    ? collectThunk(result, path, key)
+    ? collectThunk(result, path, key, selectors)
     : set(result, path, get(result, path, key)) // don't override if it already exists
 )
 
-const collectAction = (action, path) => (
-  (key, ...args) => decorate(action(...args), path, key)
+const collectAction = (action, path, selectors) => (
+  (key, ...args) => decorate(action(...args), path, key, selectors)
 )
 
-const collectActions = (actions, path) => (
-  mapValues(actions, action => collectAction(action, path))
+const collectActions = (actions, path, selectors) => (
+  mapValues(actions, action => collectAction(action, path, selectors))
 )
 
 const bindCollectedAction = (action, key) => (
@@ -101,6 +111,8 @@ module.exports = {
   collectSelectors,
   collectAction,
   collectActions,
+  bindSelector,
+  bindSelectors,
   bindCollectedAction,
   bindCollectedActions
 }

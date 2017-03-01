@@ -18,7 +18,7 @@ const creators = {
 
 const thunks = {
   thunkAdd: car => dispatch => dispatch(creators.add(car)),
-  incrementPrice: () => (dispatch, getState) => (
+  incrementPrice: () => (dispatch, getState, selectors) => (
     dispatch(creators.setPrice(selectors.getPrice(getState()) + 1))
   )
 }
@@ -27,4 +27,4 @@ const deepThunks = {
   deepThunkAdd: car => dispatch => dispatch(thunks.thunkAdd(car))
 }
 
-module.exports = collectActions(Object.assign(creators, thunks, deepThunks), 'vin')
+module.exports = collectActions(Object.assign(creators, thunks, deepThunks), 'vin', selectors)

@@ -1,6 +1,7 @@
 const { createStore, applyMiddleware } = require('redux')
 const thunk = require('redux-thunk').default
 const Immutable = require('Immutable')
+const mapValues = require('lodash.mapvalues')
 const { cars, selectors } = require('./cars')
 const actions = require('./actions')
 const { bindCollectedActions } = require('../../index.js')
@@ -131,23 +132,35 @@ describe('thunks', () => {
       [jaguar.vin]: jaguar
     }))).toBe(true)
   })
+
+  test('thunk with selectors', () => {
+    hydrateStore({
+      [jaguar.vin]: jaguar
+    })
+
+    // const boundSelectors = mapValues(selectors, selector => (...args) => (
+    //   selector(jaguar.vin, ...args)
+    // ))
+
+    store.dispatch(actions.incrementPrice(jaguar.vin, jaguar))
+
+    expect(selectors.getPrice(store.getState(), jaguar.vin)).toBe(jaguar.price + 1)
+  })
 })
 
 describe('bound actions', () => {
   const boundActions = bindCollectedActions(actions, mustang.vin)
 
   test('sets the price of a car', () => {
-    test('sets the price of a car', () => {
-      hydrateStore({
-        [mustang.vin]: mustang
-      })
-
-      store.dispatch(boundActions.setPrice(30000))
-
-      expect(store.getState().get(mustang.vin)).toEqual(Object.assign({}, mustang, {
-        price: 30000
-      }))
+    hydrateStore({
+      [mustang.vin]: mustang
     })
+
+    store.dispatch(boundActions.setPrice(30000))
+
+    expect(store.getState().get(mustang.vin)).toEqual(Object.assign({}, mustang, {
+      price: 30000
+    }))
   })
 
   test('bound thunk add', () => {
@@ -166,12 +179,6 @@ describe('bound actions', () => {
   })
 })
 
-test.skip('bind selectors', () => {
-  hydrateStore({
-    [jaguar.vin]: jaguar
-  })
+describe('bind selectors', () => {
 
-  store.dispatch(actions.incrementPrice(bindCollectSelectors(selectors))(jaguar.vin, jaguar))
-
-  expect(selectors.getPrice(store.getState(), jaguar.vin)).toBe(jaguar.price + 1)
 })
