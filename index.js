@@ -1,6 +1,9 @@
 const Immutable = require('immutable')
 const get = require('lodash.get')
+const set = require('lodash.set')
 const mapValues = require('lodash.mapvalues')
+
+const selectorContext = []
 
 /**
  * Takes a reducer and returns a reducer for a collection.
@@ -57,8 +60,37 @@ const collectSelectors = selectors => (
   mapValues(selectors, collectSelector)
 )
 
+/**
+ * ACTIONS
+ */
+const collectThunk = (thunk, path, key) => {
+  const decorateDispatch = dispatch => (
+   (result, ...args) => dispatch(decorate(result, path, key), ...args)
+  )
+
+  return (dispatch, ...args) => {
+    thunk(decorateDispatch(dispatch), ...args)
+  }
+}
+
+const decorate = (result, path, key) => (
+  typeof result === 'function'
+    ? collectThunk(result, path, key)
+    : set(result, path, get(result, path, key)) // don't override if it already exists
+)
+
+const collectAction = (action, path) => (
+  (key, ...args) => decorate(action(...args), path, key)
+)
+
+const collectActions = (actions, path) => (
+  mapValues(actions, action => collectAction(action, path))
+)
+
 module.exports = {
   collectReducer,
   collectSelector,
-  collectSelectors
+  collectSelectors,
+  collectAction,
+  collectActions
 }

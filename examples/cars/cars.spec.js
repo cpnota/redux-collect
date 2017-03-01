@@ -1,14 +1,16 @@
-const { createStore } = require('redux')
+const { createStore, applyMiddleware } = require('redux')
+const thunk = require('redux-thunk').default
 const Immutable = require('Immutable')
 const { cars, selectors } = require('./cars')
-const types = require('./types')
+const actions = require('./actions')
+const { bindCollectSelectors } = require('../../index.js')
 
 let store
 
-beforeEach(() => store = createStore(cars))
+beforeEach(() => store = createStore(cars, applyMiddleware(thunk)))
 
 function hydrateStore(pojo) {
-  store = createStore(cars, pojo)
+  store = createStore(cars, pojo, applyMiddleware(thunk))
 }
 
 const jaguar = {
@@ -46,11 +48,7 @@ describe('reducer', () => {
       [mustang.vin]: mustang
     })
 
-    store.dispatch({
-      type: types.ADD,
-      car: jaguar,
-      vin: jaguar.vin
-    })
+    store.dispatch(actions.add(jaguar.vin, jaguar))
 
     expect(store.getState().equals(Immutable.Map({
       [jaguar.vin]: jaguar,
@@ -63,11 +61,7 @@ describe('reducer', () => {
       [mustang.vin]: mustang
     })
 
-    store.dispatch({
-      type: types.SET_PRICE,
-      price: 30000,
-      vin: mustang.vin
-    })
+    store.dispatch(actions.setPrice(mustang.vin, 30000))
 
     expect(store.getState().get(mustang.vin)).toEqual(Object.assign({}, mustang, {
       price: 30000
@@ -80,10 +74,7 @@ describe('reducer', () => {
       [mustang.vin]: mustang
     })
 
-    store.dispatch({
-      type: types.REMOVE,
-      vin: mustang.vin
-    })
+    store.dispatch(actions.remove(mustang.vin))
 
     expect(store.getState().equals(Immutable.Map({
       [jaguar.vin]: jaguar
@@ -112,4 +103,42 @@ describe('selectors', () => {
     const isMustang = selectors.isModel(store.getState(), jaguar.vin, mustang.model)
     expect(isMustang).toBe(false)
   })
+})
+
+describe('thunks', () => {
+  test('thunk add', () => {
+    hydrateStore({
+      [mustang.vin]: mustang
+    })
+
+    store.dispatch(actions.thunkAdd(jaguar.vin, jaguar))
+
+    expect(store.getState().equals(Immutable.Map({
+      [mustang.vin]: mustang,
+      [jaguar.vin]: jaguar
+    }))).toBe(true)
+  })
+
+  test('deep thunk add', () => {
+    hydrateStore({
+      [mustang.vin]: mustang
+    })
+
+    store.dispatch(actions.deepThunkAdd(jaguar.vin, jaguar))
+
+    expect(store.getState().equals(Immutable.Map({
+      [mustang.vin]: mustang,
+      [jaguar.vin]: jaguar
+    }))).toBe(true)
+  })
+})
+
+test.skip('bind selectors', () => {
+  hydrateStore({
+    [jaguar.vin]: jaguar
+  })
+
+  store.dispatch(actions.incrementPrice(bindCollectSelectors(selectors))(jaguar.vin, jaguar))
+
+  expect(selectors.getPrice(store.getState(), jaguar.vin)).toBe(jaguar.price + 1)
 })
