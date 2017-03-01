@@ -3,7 +3,7 @@ const thunk = require('redux-thunk').default
 const Immutable = require('Immutable')
 const { cars, selectors } = require('./cars')
 const actions = require('./actions')
-const { bindCollectSelectors } = require('../../index.js')
+const { bindCollectedActions } = require('../../index.js')
 
 let store
 
@@ -130,6 +130,39 @@ describe('thunks', () => {
       [mustang.vin]: mustang,
       [jaguar.vin]: jaguar
     }))).toBe(true)
+  })
+})
+
+describe('bound actions', () => {
+  const boundActions = bindCollectedActions(actions, mustang.vin)
+
+  test('sets the price of a car', () => {
+    test('sets the price of a car', () => {
+      hydrateStore({
+        [mustang.vin]: mustang
+      })
+
+      store.dispatch(boundActions.setPrice(30000))
+
+      expect(store.getState().get(mustang.vin)).toEqual(Object.assign({}, mustang, {
+        price: 30000
+      }))
+    })
+  })
+
+  test('bound thunk add', () => {
+    test('thunk add', () => {
+      hydrateStore({
+        [mustang.vin]: mustang
+      })
+
+      store.dispatch(boundActions.thunkAdd(jaguar.vin, jaguar))
+
+      expect(store.getState().equals(Immutable.Map({
+        [mustang.vin]: mustang,
+        [jaguar.vin]: jaguar
+      }))).toBe(true)
+    })
   })
 })
 

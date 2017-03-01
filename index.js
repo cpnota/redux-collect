@@ -87,10 +87,20 @@ const collectActions = (actions, path) => (
   mapValues(actions, action => collectAction(action, path))
 )
 
+const bindCollectedAction = (action, key) => (
+  (...args) => action(key, ...args)
+)
+
+const bindCollectedActions = (actions, key) => (
+  mapValues(actions, action => bindCollectedAction(action, key))
+)
+
 module.exports = {
   collectReducer,
   collectSelector,
   collectSelectors,
   collectAction,
-  collectActions
+  collectActions,
+  bindCollectedAction,
+  bindCollectedActions
 }
