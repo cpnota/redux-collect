@@ -1,5 +1,3 @@
-const { collectActions } = require('../../index')
-const { selectors } = require('./cars')
 const types = require('./types')
 
 const creators = {
@@ -27,4 +25,4 @@ const deepThunks = {
   deepThunkAdd: car => dispatch => dispatch(thunks.thunkAdd(car))
 }
 
-module.exports = collectActions(Object.assign(creators, thunks, deepThunks), 'vin', selectors)
+module.exports = Object.assign(creators, thunks, deepThunks)

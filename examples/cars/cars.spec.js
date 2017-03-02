@@ -1,17 +1,16 @@
 const { createStore, applyMiddleware } = require('redux')
 const thunk = require('redux-thunk').default
 const Immutable = require('Immutable')
-const mapValues = require('lodash.mapvalues')
-const { cars, selectors } = require('./cars')
-const actions = require('./actions')
+const { reducer, selectors, actions } = require('./cars')
 const { bindCollectedActions } = require('../../index.js')
 
 let store
 
-beforeEach(() => store = createStore(cars, applyMiddleware(thunk)))
+beforeEach(() => store = createStore(reducer, applyMiddleware(thunk)))
 
+// redux-collect reducers can be hydrated with normal javascript objects
 function hydrateStore(pojo) {
-  store = createStore(cars, pojo, applyMiddleware(thunk))
+  store = createStore(reducer, pojo, applyMiddleware(thunk))
 }
 
 const jaguar = {

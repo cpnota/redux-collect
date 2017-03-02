@@ -1,15 +1,13 @@
-const { collectReducer, collectSelectors } = require('../../index')
-const { car, selectors: carSelectors } = require('./car')
+const { collectReducer, collectSelectors, collectActions } = require('../../index')
+const { reducer, selectors } = require('./reducer')
+const actions = require('./actions')
 
-// create a reducer for a collection of cars
-// based on Vehicle Identification Number
-const cars = collectReducer(car, 'vin')
-
-// create selectors corresponding to the reducer
-// created above
-const selectors = collectSelectors(carSelectors)
+const reducerForCollection = collectReducer(reducer, 'vin')
+const selectorsForCollection = collectSelectors(selectors)
+const actionsForCollection = collectActions(actions, 'vin', selectorsForCollection)
 
 module.exports = {
-  cars,
-  selectors
+  reducer: reducerForCollection,
+  selectors: selectorsForCollection,
+  actions: actionsForCollection
 }
