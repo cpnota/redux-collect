@@ -58,22 +58,91 @@ const collectSelectors = selectors => (
   mapValues(selectors, collectSelector)
 )
 
+/**
+ * Binds a selector created with collectSelector to a key
+ * @param selector the selector to bindSelector
+ * @param key the key passed to the collected selector
+ * @return a selector for a particular entity in the collection
+ */
 const bindSelector = (selector, key) => (
   (state, ...args) => selector(state, key, ...args)
 )
 
+/**
+ * Binds multiple selectors according to the reuls of bindSelector
+ * @param selectors an object whose values are selectors
+ * @param key the key passed to the collected selector
+ * @return an object whose values are bound selectors
+ */
 const bindSelectors = (selectors, key) => (
   mapValues(selectors, selector => bindSelector(selector, key))
 )
 
 /**
- * ACTIONS
+ * Creates an action creator corresponding to a reducer created by collectReducer.
+ * The action creator should not know about the path or the key,
+ * and neither should any of its selectors,
+ * or any actions it calls (if it is a thunk).
+ * It optionally takes a "selectors" parameter.
+ * This should be an object containing selectors created by collectSelectors.
+ * If provided, it will be passed as a third argument to thunks,
+ * (e.g. const thunkCreator = () => (dispatch, getState, selector) => { ... }))
+ * @param action The action creator to change into an action creator for a collection
+ * @param path The path to set the collection key in the created action
+ * @param selectors (optional) selectors corresponding the collection created with collectSelectors
+ * @return an action creator for a collection
  */
+const collectAction = (action, path, selectors) => (
+  (key, ...args) => decorate(action(...args), path, key, selectors)
+)
+
+/**
+ * Creates multiples action creators corresponding to the reuls of collectAction
+ * @param actions an object whose values are actions creators
+ * @param path The path to set the collection key in the created actions
+ * @param selectors (optional) selectors corresponding the collection created with collectSelectors
+ * @return an object containing action creators for a collection
+ */
+const collectActions = (actions, path, selectors) => (
+  mapValues(actions, action => collectAction(action, path, selectors))
+)
+
+/**
+ * Binds an action creator created with collectAction to a key
+ * (Do not confuse with bindActionCreators, which is for binding dispatch,
+ * this is simply for the key)
+ * @param action an action creator created with collectAction
+ * @param key the collection key to bind to the action creator
+ * @return the bound action creator
+ */
+const bindCollectedAction = (action, key) => (
+  (...args) => action(key, ...args)
+)
+
+/**
+ * Binds multiple action creators created with collectAction to a key
+ * according to the rules of bindCollectedAction
+ * @param actions an object containing action creators
+ * @param key the collection key to bind the action creators
+ * @return an object containing the bound action creators
+ */
+const bindCollectedActions = (actions, key) => (
+  mapValues(actions, action => bindCollectedAction(action, key))
+)
+
+// helper for for handling actions
+const decorate = (action, path, key, selectors) => (
+  typeof action === 'function'
+    ? collectThunk(action, path, key, selectors)
+    : set(action, path, get(action, path, key)) // don't override if it already exists
+)
+
+// helper for overriding dispatch in thunks
 const collectThunk = (thunk, path, key, selectors) => {
   const boundSelectors = bindSelectors(selectors, key)
 
   const decorateDispatch = dispatch => (
-   (result, ...args) => dispatch(decorate(result, path, key), ...args)
+   (action, ...args) => dispatch(decorate(action, path, key), ...args)
   )
 
   return (dispatch, getState, ...args) => (
@@ -82,28 +151,6 @@ const collectThunk = (thunk, path, key, selectors) => {
       : thunk(decorateDispatch(dispatch), getState, ...args)
   )
 }
-
-const decorate = (result, path, key, selectors) => (
-  typeof result === 'function'
-    ? collectThunk(result, path, key, selectors)
-    : set(result, path, get(result, path, key)) // don't override if it already exists
-)
-
-const collectAction = (action, path, selectors) => (
-  (key, ...args) => decorate(action(...args), path, key, selectors)
-)
-
-const collectActions = (actions, path, selectors) => (
-  mapValues(actions, action => collectAction(action, path, selectors))
-)
-
-const bindCollectedAction = (action, key) => (
-  (...args) => action(key, ...args)
-)
-
-const bindCollectedActions = (actions, key) => (
-  mapValues(actions, action => bindCollectedAction(action, key))
-)
 
 module.exports = {
   collectReducer,
